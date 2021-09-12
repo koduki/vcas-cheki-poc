@@ -2,11 +2,13 @@ require './lib/tso.rb'
 
 cmd = ARGV[0]
 pic_dir = "#{Dir.home}/pictures/VirtualCast/Media"
+interval = 3
 
 if cmd == 'serve'
+    puts "Mode: serve, Inteval: #{interval} sec"
     current_pic = ""
     while(true) do
-        sleep(3)
+        sleep(interval)
         pic_latest_name = Dir.open(pic_dir).sort[-1]
         if current_pic != pic_latest_name
             token = open("#{ENV["HOME"]}/.tsotoken").read.strip
