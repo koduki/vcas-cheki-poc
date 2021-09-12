@@ -30,17 +30,45 @@ class Tso
     end
   end
 
+  def upload_icon item_id, src_blob
+    require 'rmagick'
+
+    height = 512
+    width = 512
+    thum_path = "/tmp/thum.png"
+
+    image = Magick::Image.from_blob(src_blob).first
+    narrow = image.columns > image.rows ? image.rows : image.columns
+
+    thum = image.crop(Magick::CenterGravity, narrow, narrow).resize(width, height)
+    thum.write(thum_path)
+
+    response = call_api("/post-items/#{item_id}/icon", {
+      :file => open(thum_path)
+    })
+    r_icon = JSON.load(response.body)
+  end
+
   def upload_vci(file)
+    # upload vci
+    file_data = open('/home/koduki/pictures/20210912.png').read
     response = call_api("/post-items", {
       :itemType => 'prop',
       :file => file
     })
-    
+
+    # uplaod icon
     require 'json'
-    JSON.load(response.body)
+    r = JSON.load(response.body)
+    r_icon = upload_icon r['itemId'], file_data
+
+    [r, r_icon]
   end
 
   def upload_pic(file, title, author)
+    # upload image
+    file_data = file.read # load for icon
+    file.pos = 0          # reset file position
     response = call_api("/post-items/image", {
       :title => title,
       :author => author,
@@ -48,8 +76,11 @@ class Tso
       :file => file
     })
 
+    # uplaod icon
     require 'json'
-    p response
-    JSON.load(response.body)
+    r = JSON.load(response.body)
+    r_icon = upload_icon r['itemId'], file_data
+
+    [r, r_icon]
   end
 end
