@@ -7,23 +7,23 @@ if cmd == 'serve'
     current_pic = ""
     while(true) do
         sleep(3)
-        pic_path = Dir.open(pic_dir).sort[-1]
-        if current_pic != pic_path
+        pic_latest_name = Dir.open(pic_dir).sort[-1]
+        if current_pic != pic_latest_name
             token = open("#{ENV["HOME"]}/.tsotoken").read.strip
-            pic = open("#{pic_dir}/#{pic_path}")
+            pic = open("#{pic_dir}/#{pic_latest_name}")
             
-            puts "Upload: #{pic_path}"
-            r = Tso.new(token).upload_pic pic, "#{pic_path}", 'koduki'
+            puts "Upload: #{pic_latest_name}"
+            r = Tso.new(token).upload_pic pic, pic_latest_name, 'koduki'
             p r
-            current_pic = pic_path
+            current_pic = pic_latest_name
         end
     end
 else
-    pic_path = Dir.open(pic_dir).sort[-1]
+    pic_latest_name = Dir.open(pic_dir).sort[-1]
     token = open("#{ENV["HOME"]}/.tsotoken").read.strip
-    pic = open("#{pic_dir}/#{pic_path}")
+    pic = open("#{pic_dir}/#{pic_latest_name}")
 
-    puts "Upload: #{pic_path}"
-    r = Tso.new(token).upload_pic pic, 'test', 'koduki'
+    puts "Upload: #{pic_latest_name}"
+    r = Tso.new(token).upload_pic pic, pic_latest_name, 'koduki'
     p r
 end

@@ -1,12 +1,13 @@
 require 'rest-client'
+require 'json'
 
 class Tso
   def initialize(token)
-    @url = "https://api.seed.online/files/user"
+    @url = "https://api.seed.online"
     @token = token
   end
 
-  def call_api(path, data)
+  def call_api(path, data, url=@url)
     begin
       ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
       headers = { 
@@ -17,7 +18,7 @@ class Tso
   
       req = RestClient::Request.new(
         :method => :post,
-        :url => @url + path,
+        :url => url + path,
         :headers => headers,
         :payload => data
       )
@@ -43,10 +44,29 @@ class Tso
     thum = image.crop(Magick::CenterGravity, narrow, narrow).resize(width, height)
     thum.write(thum_path)
 
-    response = call_api("/post-items/#{item_id}/icon", {
+    response = call_api("/files/user/post-items/#{item_id}/icon", {
       :file => open(thum_path)
     })
-    r_icon = JSON.load(response.body)
+    r = [JSON.load(response.body), thum_path]
+  end
+
+  def add_prodcut(item_id, title, description, thum_path)
+    response = call_api("/products", {
+      :itemId => item_id,
+      :title => title,
+      :description => description,
+      :accessibility => 'protected',
+      :salesMethod => 'outright_purchase',
+      :price => 0,
+      :isSoldOnWeb => 1,
+      :isSoldOnVr => 1,
+      'thumbnails[0]' => open(thum_path),
+      'newOrder[0]'=> thum_path.split('/').last
+    })
+    # }, "http://127.0.0.1:4567")
+
+    p response
+    r = JSON.load(response.body)
   end
 
   def upload_vci(file)
@@ -57,8 +77,7 @@ class Tso
       :file => file
     })
 
-    # uplaod icon
-    require 'json'
+    # update icon
     r = JSON.load(response.body)
     r_icon = upload_icon r['itemId'], file_data
 
@@ -69,18 +88,22 @@ class Tso
     # upload image
     file_data = file.read # load for icon
     file.pos = 0          # reset file position
-    response = call_api("/post-items/image", {
+    response = call_api("/files/user/post-items/image", {
       :title => title,
       :author => author,
       :version => '',
       :file => file
     })
 
-    # uplaod icon
-    require 'json'
-    r = JSON.load(response.body)
-    r_icon = upload_icon r['itemId'], file_data
+    # update icon
+    r = JSON.load response.body
+    item_id = r['itemId']
+    r_icon = upload_icon item_id, file_data
 
-    [r, r_icon]
+    # add to prodcut
+    r_prdct = add_prodcut item_id, title, 'Photo in VirtualCast', r_icon[1]
+
+    [r, r_icon, r_prdct]
   end
+
 end
