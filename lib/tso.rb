@@ -39,4 +39,17 @@ class Tso
     require 'json'
     JSON.load(response.body)
   end
+
+  def upload_pic(file, title, author)
+    response = call_api("/post-items/image", {
+      :title => title,
+      :author => author,
+      :version => '',
+      :file => file
+    })
+
+    require 'json'
+    p response
+    JSON.load(response.body)
+  end
 end
