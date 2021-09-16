@@ -72,7 +72,7 @@ class Tso
   def upload_vci(file)
     # upload vci
     file_data = open('/home/koduki/pictures/20210912.png').read
-    response = call_api("/post-items", {
+    response = call_api("/files/user/post-items", {
       :itemType => 'prop',
       :file => file
     })
