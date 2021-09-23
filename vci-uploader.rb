@@ -5,5 +5,6 @@ token = open("#{ENV["HOME"]}/.tsotoken").read.strip
 vci = open(vci_path)
 
 puts "Upload: #{vci_path}"
-r = Tso.new(token).upload_vci vci
+tso = Tso.new(token)
+r = tso.upload_vci vci
 p r

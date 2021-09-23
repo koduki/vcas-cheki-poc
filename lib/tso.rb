@@ -1,5 +1,6 @@
 require 'rest-client'
 require 'json'
+require './lib/vci_slide.rb'
 
 class Tso
   def initialize(token)
@@ -71,22 +72,46 @@ class Tso
 
   def upload_vci(file)
     # upload vci
-    file_data = open('/home/koduki/pictures/20210912.png').read
+    vci_data = file.read  # load for icon
+    file.pos = 0          # reset file position
+    # file_data = open('/home/koduki/pictures/20210912.png').read
     response = call_api("/files/user/post-items", {
       :itemType => 'prop',
       :file => file
     })
+    r = JSON.load(response.body)
+
+    # parse VCI
+    require 'stringio'
+    io = StringIO.new(vci_data)
+
+    vci_slide = VCISlide.new nil, nil, nil, nil, nil, nil
+    property, glb_buff_data = vci_slide.load_template_from_data(io)
+
+    vci_meta = property["extensions"]["VCAST_vci_meta"]
+    title = vci_meta["title"]
+    desc = vci_meta["description"]
+    thum_idx = vci_meta["thumbnail"]
 
     # update icon
-    r = JSON.load(response.body)
-    r_icon = upload_icon r['itemId'], file_data
+    img_idx = property["images"][thum_idx]["bufferView"]
+    img_len = property["bufferViews"][img_idx]["byteLength"]
 
-    [r, r_icon]
+    bfv = property["bufferViews"][img_idx]
+    img_data = glb_buff_data[bfv["byteOffset"], bfv["byteLength"]]
+    icon_data = img_data.unpack('C*').pack('C*')
+    
+    item_id = r['itemId']
+    r_icon = upload_icon item_id, icon_data
+
+    # add to prodcut
+    r_prdct = add_prodcut item_id, title, desc, r_icon[1]
+    [r, r_icon, r_prdct]
   end
 
   def upload_pic(file, title, author)
     # upload image
-    file_data = file.read # load for icon
+    icon_data = file.read # load for icon
     file.pos = 0          # reset file position
     response = call_api("/files/user/post-items/image", {
       :title => title,
@@ -96,9 +121,10 @@ class Tso
     })
 
     # update icon
+    
     r = JSON.load response.body
     item_id = r['itemId']
-    r_icon = upload_icon item_id, file_data
+    r_icon = upload_icon item_id, icon_data
 
     # add to prodcut
     r_prdct = add_prodcut item_id, title, 'Photo in VirtualCast', r_icon[1]
