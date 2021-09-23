@@ -20,12 +20,20 @@ if cmd == 'serve'
             current_pic = pic_latest_name
         end
     end
-else
+elsif cmd == nil
     pic_latest_name = Dir.open(pic_dir).sort[-1]
     token = open("#{ENV["HOME"]}/.tsotoken").read.strip
     pic = open("#{pic_dir}/#{pic_latest_name}")
 
     puts "Upload: #{pic_latest_name}"
     r = Tso.new(token).upload_pic pic, pic_latest_name, 'koduki'
+    p r
+else
+    pic_name = cmd
+    token = open("#{ENV["HOME"]}/.tsotoken").read.strip
+    pic = open("#{pic_name}")
+
+    puts "Upload: #{pic_name}"
+    r = Tso.new(token).upload_pic pic, pic_name, 'koduki'
     p r
 end
