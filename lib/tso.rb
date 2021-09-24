@@ -85,7 +85,7 @@ class Tso
     require 'stringio'
     io = StringIO.new(vci_data)
 
-    vci_slide = VCISlide.new nil, nil, nil, nil, nil, nil
+    vci_slide = VCISlide.new
     property, glb_buff_data = vci_slide.load_template_from_data(io)
 
     vci_meta = property["extensions"]["VCAST_vci_meta"]

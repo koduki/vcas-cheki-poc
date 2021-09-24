@@ -13,7 +13,7 @@ SLIDE_TEXTURE_NAME = "Slide-all"
 class VCISlide
     attr_accessor :template_vci_path, :vci_script_path, :image_path, :page_size, :output_path, :meta_title, :meta_version, :meta_author, :meta_description, :max_page_index, :max_page_index
 
-    def initialize template_vci_path, vci_script_path, image_path, page_size, max_page_index, output_path
+    def initialize template_vci_path=nil, vci_script_path=nil, image_path=nil, page_size=nil, max_page_index=nil, output_path=nil
         @template_vci_path = template_vci_path
         @vci_script_path = vci_script_path
         @image_path = image_path
@@ -32,7 +32,12 @@ class VCISlide
         src, src_idx = load_script(property, page_size, max_page_index)
 
         data = mk_data(property, glb_buff_data, image, img_idx, src, src_idx)
-        meta = {title:@meta_title, version:@meta_version, author:@meta_author, description:@meta_description}
+        meta = {
+            title:@meta_title, 
+            version:@meta_version, 
+            author:@meta_author, 
+            description:@meta_description
+        }
         json = mk_json(property, image, img_idx, src, src_idx, data, @page_size, meta)
 
         json, data = align(json,  data)
