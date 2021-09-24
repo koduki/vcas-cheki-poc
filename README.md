@@ -4,6 +4,12 @@
 
 ## 写真のアップロード
 
+### 任意の写真を1枚アップ
+
+```bash
+ruby pic-uploader.rb mypic.png
+```
+
 ### 最新の写真を1枚アップ
 
 ```bash
